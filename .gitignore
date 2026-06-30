@@ -1,0 +1,81 @@
+##################################
+# Root / Common
+##################################
+node_modules/
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+##################################
+# Backend (Node / Express)
+##################################
+server/node_modules/
+server/.env
+server/logs/
+server/*.log
+server/uploads/
+server/dist/
+
+##################################
+# Frontend (React / Vite / CRA)
+##################################
+client/node_modules/
+client/.env
+client/.env.local
+client/.env.development
+client/.env.production
+
+# Build outputs
+client/build/
+client/dist/
+client/.vite/
+
+##################################
+# Next.js (if used)
+##################################
+.next/
+out/
+
+##################################
+# MongoDB
+##################################
+data/
+*.mongodb
+*.db
+
+##################################
+# Cloudinary / Uploads
+##################################
+uploads/
+temp/
+tmp/
+
+##################################
+# OS / Editor
+##################################
+.DS_Store
+Thumbs.db
+
+.vscode/
+.idea/
+*.swp
+
+##################################
+# Testing / Coverage
+##################################
+coverage/
+.nyc_output/
+
+##################################
+# Misc
+##################################
+*.log
+*.pem
+*.key
