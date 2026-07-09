@@ -1,0 +1,88 @@
+classDiagram
+    class AIChatbot {
+        +useState open
+        +useState input
+        +useState loading
+        +useState messages
+        +send(text)
+        +onKeyDown(e)
+    }
+
+    class CompareModal {
+        +useState loading
+        +useState summary
+        +compareItems[]
+    }
+
+    class AppContext {
+        +userToken
+        +compareList[]
+        +aiSearch(query)
+        +aiCompare(properties)
+    }
+
+    class AIRouter {
+        +POST /api/ai/search
+        +POST /api/ai/compare
+    }
+
+    class AIClient {
+        +callLLM(options)
+        +isLLMConfigured()
+        +llmProvider()
+    }
+
+    class ParseQuery {
+        +parseQueryHeuristic(query, locations)
+        +normalizePropertyType(type)
+        +mongoFromFilters(filters, options)
+        +mongoFromLandFilters(filters, options)
+    }
+
+    class User {
+        +ObjectId id
+        +string name
+        +string email
+        +string phone
+        +string password
+        +boolean isAdmin
+        +matchPassword(enteredPassword)
+    }
+
+    class Property {
+        +ObjectId id
+        +string title
+        +string description
+        +number price
+        +string type
+        +string propertyType
+        +string location
+        +number bedrooms
+        +number bathrooms
+        +number area
+        +string image
+        +boolean featured
+        +ObjectId owner
+    }
+
+    class Land {
+        +ObjectId id
+        +string description
+        +number price
+        +string location
+        +number area
+        +string image
+        +ObjectId owner
+    }
+
+    AIChatbot ..> AppContext : "uses aiSearch"
+    CompareModal ..> AppContext : "uses aiCompare"
+    AppContext --> AIRouter : "HTTP Requests"
+    
+    AIRouter --> AIClient : "delegates parsing & summaries"
+    AIRouter --> ParseQuery : "normalizes DB filters"
+    AIRouter --> Property : "queries collections"
+    AIRouter --> Land : "queries collections"
+
+    Property --> User : "referenced owner"
+    Land --> User : "referenced owner"

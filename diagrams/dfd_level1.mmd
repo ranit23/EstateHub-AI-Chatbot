@@ -1,0 +1,45 @@
+graph TD
+    User[User / Visitor]
+    subgraph Processes [Application Processes]
+        P1[1.0 Authenticate User]
+        P2[2.0 Manage Property / Land Listings]
+        P3[3.0 Traditional search & filter]
+        P4[4.0 AI Chatbot search & parsing]
+        P5[5.0 AI Property Comparison]
+    end
+    
+    subgraph Data Stores
+        D1[(User Collection)]
+        D2[(Property Collection)]
+        D3[(Land Collection)]
+    end
+    
+    Gemini[Google Gemini API]
+    Cloudinary[Cloudinary API]
+
+    User -->|Login / Register Details| P1
+    P1 <-->|Validate & Fetch Credentials| D1
+    P1 -->|Session JWT Token| User
+
+    User -->|Upload Image| Cloudinary
+    Cloudinary -->|Secure URL| P2
+    User -->|Listing Details| P2
+    P2 -->|Save/Update Listing| D2
+    P2 -->|Save/Update Land| D3
+    P2 <-->|Read User Listing Owner| D1
+    P2 -->|Active Dashboard Data| User
+
+    User -->|Select Location / Price Filters| P3
+    P3 <-->|Query Listings| D2
+    P3 <-->|Query Land| D3
+    P3 -->|Grid Listing Data| User
+
+    User -->|Natural Language Search Query| P4
+    P4 <-->|Query Extracted Filters / Summaries| Gemini
+    P4 <-->|Search Matches| D2
+    P4 <-->|Search Matches| D3
+    P4 -->|Summary, Chips, & Result Cards| User
+
+    User -->|Select listings to compare| P5
+    P5 <-->|Generate Tradeoffs Summary| Gemini
+    P5 -->|Interactive Comparison Matrix| User

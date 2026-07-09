@@ -1,0 +1,44 @@
+erDiagram
+    USER {
+        ObjectId _id PK
+        string name
+        string email
+        string phone
+        string password
+        boolean isAdmin
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    PROPERTY {
+        ObjectId _id PK
+        string title
+        string description
+        number price
+        string type "sale | rent"
+        string propertyType "House | Apartment | Villa"
+        string location
+        number bedrooms
+        number bathrooms
+        number area
+        string image
+        boolean featured
+        ObjectId owner FK
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    LAND {
+        ObjectId _id PK
+        string description
+        number price
+        string location
+        number area
+        string image
+        ObjectId owner FK
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    USER ||--o{ PROPERTY : "owns / lists"
+    USER ||--o{ LAND : "owns / lists"

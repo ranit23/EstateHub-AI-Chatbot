@@ -1,0 +1,14 @@
+graph LR
+    User[User / Visitor]
+    Gemini[Google Gemini LLM]
+    Cloudinary[Cloudinary API]
+    System((EstateHub Web Application))
+
+    User -->|1. Credentials, Searches, Messages, & Property Details| System
+    System -->|2. Listings, Match Chips, Compare Summaries, & Dashboards| User
+
+    System -->|3. Raw Search Query / Properties to Compare| Gemini
+    Gemini -->|4. Parsed JSON Filters / AI Summaries| System
+
+    System -->|5. Image File Upload| Cloudinary
+    Cloudinary -->|6. Secure Image URL| System

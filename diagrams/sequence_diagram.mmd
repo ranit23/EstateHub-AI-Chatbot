@@ -1,0 +1,74 @@
+sequenceDiagram
+    autonumber
+    actor User
+    participant FE as Frontend (React / UI Components)
+    participant BE as Backend Controller (Express.js)
+    participant DB as MongoDB Atlas Database
+    participant Gemini as External LLM (Google Gemini)
+    participant Cloud as Cloudinary (Image Storage)
+
+    Note over User, DB: 1. User Authentication & Property Management (CRUD)
+    rect rgb(240, 245, 255)
+        User->>FE: Click Register/Login
+        FE->>BE: POST /api/auth/register or /login
+        BE->>DB: Check/Save User Credentials (bcrypt)
+        DB-->>BE: User Document
+        BE-->>FE: Return JSON Web Token (JWT) + User Profile
+        
+        Note over User, Cloud: Authorized Listing Creation
+        User->>FE: Fill Listing Form (Add Title, Price, Location, Image File)
+        FE->>Cloud: Upload Image File directly/via Multer
+        Cloud-->>FE: Return Secure Image URL
+        FE->>BE: POST /api/properties (Include Image URL + JWT)
+        BE->>DB: Save Property/Land Schema (Linked with User ObjectId)
+        DB-->>BE: Success Status
+        BE-->>FE: Redirect to Dashboard / Show Toast Success
+    end
+
+    Note over User, Gemini: 2. Property Discovery & Search Modules
+    rect rgb(245, 240, 255)
+        alt Traditional Search
+            User->>FE: Input static filters (Location, Property Type, Budget)
+            FE->>BE: GET /api/properties?location=...&price=...
+            BE->>DB: Run MongoDB Queries (Exact match)
+            DB-->>BE: Return Listing Documents
+            BE-->>FE: Render Property Grid
+        else AI Chatbot Search
+            User->>FE: Type Natural Language (e.g., "2BHK rent under 40k in OMR")
+            FE->>BE: POST /api/ai/search { query }
+            BE->>BE: Execute parseQueryHeuristic(query)
+            alt Gemini API Active
+                BE->>Gemini: Parse query text to structured JSON filters
+                Gemini-->>BE: Return Filter JSON (type, price range, bedrooms, etc.)
+            end
+            BE->>DB: Run MongoDB Query (Apply progressive relaxation if no results)
+            DB-->>BE: Return Listing Documents
+            alt Gemini API Active
+                BE->>Gemini: Request one-sentence summary of listings
+                Gemini-->>BE: Return conversational summary text
+            end
+            BE-->>FE: Return { filters, results, summary, relaxed }
+            FE-->>User: Render Message Bubble + Parameter Chips + Result Cards
+        end
+    end
+
+    Note over User, DB: 3. Detail View, Comparison, and Contact
+    rect rgb(240, 255, 245)
+        User->>FE: Select multiple properties for Comparison
+        FE->>BE: POST /api/ai/compare { properties }
+        alt Gemini API Active
+            BE->>Gemini: Analyze properties (trade-offs, value-for-money, area)
+            Gemini-->>BE: Return AI Comparative Summary
+        else Fallback
+            BE->>BE: Run fallback comparison logic (rules engine)
+        end
+        BE-->>FE: Return comparison summary + tag matrix
+        FE-->>User: Render Comparison Modal
+
+        Note over User, BE: Lead Generation / Contact Owner
+        User->>FE: Click "Call Agent" or "Send Message"
+        FE->>BE: Get Owner Profile details (populate owner ObjectId)
+        BE->>DB: Query User schema by Owner ID (fetch phone, email)
+        DB-->>BE: Owner Contact Info
+        BE-->>FE: Display verified "Click-to-Call" (tel:...) link or WhatsApp widget
+    end
