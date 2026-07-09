@@ -5,11 +5,32 @@ import PropertyCard from '../components/PropertyCard';
 import { useNavigate, Link } from 'react-router-dom';
 
 const HomePage = () => {
-    const { properties, wishlist, toggleWishlist } = useApp();
+    const { properties, lands, wishlist, toggleWishlist } = useApp();
     const navigate = useNavigate();
 
-    // Directly show the latest properties from the database
-    const featuredProperties = properties.slice(0, 3);
+    // Combine properties and lands (lands treated as 'sale' and 'Land' propertyType)
+    const landsWithProps = lands.map(l => ({ ...l, type: 'sale', propertyType: 'Land', title: l.title || 'Land Plot' }));
+    const allListings = [...properties, ...landsWithProps];
+
+    // Filter duplicates by unique ID and content fingerprint (to catch duplicate submissions with different DB IDs)
+    const seenIds = new Set();
+    const seenFingerprints = new Set();
+    const uniqueListings = allListings.filter(item => {
+        const id = item.id || item._id;
+        const idStr = id ? id.toString() : '';
+        const fingerprint = `${item.title || ''}_${item.price}_${item.location || ''}_${item.area}`;
+
+        if (idStr && seenIds.has(idStr)) return false;
+        if (seenFingerprints.has(fingerprint)) return false;
+
+        if (idStr) seenIds.add(idStr);
+        seenFingerprints.add(fingerprint);
+        return true;
+    });
+
+    // Sort by newest first
+    const sortedListings = uniqueListings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const featuredProperties = sortedListings.slice(0, 3);
 
     const [searchLocation, setSearchLocation] = useState('');
     const [searchType, setSearchType] = useState('Property Type');

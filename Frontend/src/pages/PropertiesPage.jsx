@@ -9,6 +9,15 @@ const PropertiesPage = ({ initialFilters = {}, title }) => {
     const [filteredProperties, setFilteredProperties] = useState([]);
     const [searchParams] = useSearchParams();
 
+    const locationFilter = searchParams.get('location') || initialFilters.location;
+    const propertyTypeFilter = searchParams.get('propertyType') || initialFilters.propertyType;
+    const typeFilter = searchParams.get('type') || initialFilters.type;
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    const minBedrooms = searchParams.get('minBedrooms');
+    const qParam = searchParams.get('q');
+    const relaxedParam = searchParams.get('relaxed');
+
     useEffect(() => {
         // Start with ALL listings (Properties + Lands)
         let tempProperties = [...properties];
@@ -18,19 +27,18 @@ const PropertiesPage = ({ initialFilters = {}, title }) => {
         // For simplicity, let's include lands in the pool and let filters decide.
         // Lands don't have 'type' (rent/sale) usually, they are implicitly Sale. 
         // Backend Land model doesn't have 'type'. We should treat them as 'sale' if logic requires.
-        const landsWithProps = lands.map(l => ({ ...l, type: 'sale', propertyType: 'Land' }));
+        const landsWithProps = lands.map(l => ({ ...l, type: 'sale', propertyType: 'Land', title: l.title || 'Land Plot' }));
         tempProperties = [...tempProperties, ...landsWithProps];
 
-        const locationFilter = searchParams.get('location') || initialFilters.location;
-        const propertyTypeFilter = searchParams.get('propertyType') || initialFilters.propertyType;
-        const typeFilter = searchParams.get('type') || initialFilters.type;
-        // Extra filters passed by the AI assistant's "View all" button
-        const minPrice = searchParams.get('minPrice');
-        const maxPrice = searchParams.get('maxPrice');
-        const minBedrooms = searchParams.get('minBedrooms');
-        const keywords = (searchParams.get('q') || '').split(',').map(s => s.trim()).filter(Boolean);
+        const keywords = (qParam || '').split(',').map(s => s.trim()).filter(Boolean);
+        const relaxedFilters = (relaxedParam || '').split(',').map(s => s.trim().toLowerCase());
 
-        if (locationFilter) {
+        const ignoreKeywords = relaxedFilters.includes('amenities') || relaxedFilters.includes('keywords');
+        const ignoreBedrooms = relaxedFilters.includes('bedrooms');
+        const ignorePrice = relaxedFilters.includes('price');
+        const ignoreLocation = relaxedFilters.includes('location');
+
+        if (locationFilter && !ignoreLocation) {
             const searchLocationLower = locationFilter.toLowerCase();
             tempProperties = tempProperties.filter(p =>
                 (p.location && p.location.toLowerCase().includes(searchLocationLower)) ||
@@ -44,16 +52,16 @@ const PropertiesPage = ({ initialFilters = {}, title }) => {
         if (typeFilter) { // 'sale' or 'rent'
             tempProperties = tempProperties.filter(p => p.type === typeFilter);
         }
-        if (minPrice) {
+        if (minPrice && !ignorePrice) {
             tempProperties = tempProperties.filter(p => Number(p.price) >= Number(minPrice));
         }
-        if (maxPrice) {
+        if (maxPrice && !ignorePrice) {
             tempProperties = tempProperties.filter(p => Number(p.price) <= Number(maxPrice));
         }
-        if (minBedrooms) {
+        if (minBedrooms && !ignoreBedrooms) {
             tempProperties = tempProperties.filter(p => Number(p.bedrooms || 0) >= Number(minBedrooms));
         }
-        if (keywords.length) {
+        if (keywords.length && !ignoreKeywords) {
             tempProperties = tempProperties.filter(p =>
                 keywords.some(k => {
                     const n = k.toLowerCase();
@@ -64,8 +72,24 @@ const PropertiesPage = ({ initialFilters = {}, title }) => {
             );
         }
 
-        setFilteredProperties(tempProperties);
-    }, [properties, lands, initialFilters, searchParams]);
+        // Filter duplicates by unique ID and content fingerprint (to catch duplicate submissions with different DB IDs)
+        const seenIds = new Set();
+        const seenFingerprints = new Set();
+        const uniqueProperties = tempProperties.filter(item => {
+            const id = item.id || item._id;
+            const idStr = id ? id.toString() : '';
+            const fingerprint = `${item.title || ''}_${item.price}_${item.location || ''}_${item.area}`;
+
+            if (idStr && seenIds.has(idStr)) return false;
+            if (seenFingerprints.has(fingerprint)) return false;
+
+            if (idStr) seenIds.add(idStr);
+            seenFingerprints.add(fingerprint);
+            return true;
+        });
+
+        setFilteredProperties(uniqueProperties);
+    }, [properties, lands, locationFilter, propertyTypeFilter, typeFilter, minPrice, maxPrice, minBedrooms, qParam, relaxedParam]);
 
     return (
         <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 md:px-12 py-8 sm:py-12">

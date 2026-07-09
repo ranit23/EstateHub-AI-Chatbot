@@ -61,7 +61,7 @@ const PropertyDetailsPage = () => {
                                         <MapPin className="w-5 h-5 mr-2" />
                                         {property.location}
                                     </div>
-                                    <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-slate-900 mb-2">{property.title}</h1>
+                                    <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-slate-900 mb-2">{property.title || (!property.propertyType ? 'Land Plot' : 'Untitled Listing')}</h1>
                                 </div>
                                 <div className="text-left md:text-right bg-slate-50 p-4 rounded-2xl md:bg-transparent md:p-0">
                                     <p className="text-slate-500 text-sm font-bold uppercase mb-1">Price</p>

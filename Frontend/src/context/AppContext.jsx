@@ -184,6 +184,7 @@ export const AppProvider = ({ children }) => {
                 setProperties([savedProperty, ...properties]);
                 return true;
             }
+            showToast(savedProperty.error || 'Failed to add property', 'error');
             return false;
         } catch (err) {
             showToast('Failed to add property', 'error');
@@ -207,6 +208,7 @@ export const AppProvider = ({ children }) => {
                 setLands([savedLand, ...lands]);
                 return true;
             }
+            showToast(savedLand.error || 'Failed to add land', 'error');
             return false;
         } catch (err) {
             showToast('Failed to add land', 'error');

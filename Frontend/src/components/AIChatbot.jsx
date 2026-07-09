@@ -214,7 +214,9 @@ const AIChatbot = () => {
                                             {msg.filters && (
                                                 <button
                                                     onClick={() => {
-                                                        navigate(`/search?${viewAllParams(msg.filters)}`);
+                                                        const params = viewAllParams(msg.filters);
+                                                        const relaxedParam = msg.relaxed && msg.relaxed.length ? `&relaxed=${msg.relaxed.join(',')}` : '';
+                                                        navigate(`/search?${params}${relaxedParam}`);
                                                         closePanel();
                                                     }}
                                                     className="w-full flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-indigo-600 text-white text-sm font-bold py-2.5 rounded-xl transition-colors"

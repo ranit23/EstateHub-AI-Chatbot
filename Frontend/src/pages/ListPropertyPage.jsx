@@ -7,6 +7,7 @@ const ListPropertyPage = () => {
     const { user, addProperty, addLand, showToast } = useApp();
     const navigate = useNavigate();
     const [listingCategory, setListingCategory] = useState('property'); // 'property' or 'land'
+    const [submitting, setSubmitting] = useState(false);
 
     const [formData, setFormData] = useState({
         title: '', description: '', price: '', type: 'sale', propertyType: 'house',
@@ -32,6 +33,7 @@ const ListPropertyPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitting(true);
 
         const data = new FormData();
         data.append('title', formData.title);
@@ -46,6 +48,7 @@ const ListPropertyPage = () => {
 
         if (listingCategory === 'land') {
             const success = await addLand(data);
+            setSubmitting(false);
             if (success) {
                 showToast('Land listed successfully!');
                 navigate('/');
@@ -58,6 +61,7 @@ const ListPropertyPage = () => {
             data.append('featured', 'false');
 
             const success = await addProperty(data);
+            setSubmitting(false);
             if (success) {
                 showToast('Property listed successfully!');
                 navigate('/');
@@ -162,8 +166,16 @@ const ListPropertyPage = () => {
                     </>
                 )}
 
-                <button type="submit" className="w-full bg-indigo-600 text-white py-5 rounded-2xl hover:bg-indigo-700 font-bold text-xl shadow-xl shadow-indigo-200 transition-all hover:-translate-y-1 mt-6">
-                    Publish Listing
+                <button
+                    type="submit"
+                    disabled={submitting}
+                    className={`w-full text-white py-5 rounded-2xl font-bold text-xl shadow-xl transition-all mt-6 ${
+                        submitting 
+                            ? 'bg-slate-400 cursor-not-allowed shadow-none' 
+                            : 'bg-indigo-600 hover:bg-indigo-700 hover:-translate-y-1 shadow-indigo-200'
+                    }`}
+                >
+                    {submitting ? 'Publishing Listing...' : 'Publish Listing'}
                 </button>
             </form>
         </div>

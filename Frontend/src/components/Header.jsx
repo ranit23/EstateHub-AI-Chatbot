@@ -20,6 +20,14 @@ const Header = () => {
         setProfileMenuOpen(false);
     };
 
+    const handleHomeClick = (e) => {
+        closeMenu();
+        if (window.location.pathname === '/') {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
     return (
         <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-slate-900/90 border-b border-slate-700 shadow-sm font-sans">
             <div className="max-w-7xl mx-auto px-6 md:px-10">
@@ -28,7 +36,7 @@ const Header = () => {
                     {/* Logo */}
                     <Link
                         to="/"
-                        onClick={closeMenu}
+                        onClick={handleHomeClick}
                         className="flex items-center cursor-pointer group mr-10"
                     >
                         <div className="bg-gradient-to-br from-indigo-600 to-violet-600 p-3 rounded-xl shadow-lg group-hover:scale-105 transition-transform">
@@ -47,6 +55,7 @@ const Header = () => {
                             {[
                                 { path: '/buy', label: 'Buy' },
                                 { path: '/rent', label: 'Rent' },
+                                { path: '/lands', label: 'Land & Plots' },
                                 { path: '/list-property', label: 'List Property' }
                             ].map((item) => (
                                 <NavLink
